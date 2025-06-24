@@ -389,7 +389,12 @@ func isTransferEncodingChunked(req *http.Request) bool {
 	transferEncodingVal := req.Header.Get("Transfer-Encoding")
 	// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Transfer-Encoding suggests that this can be a comma
 	// separated value as well.
-	return strings.Contains(strings.ToLower(transferEncodingVal), "chunked")
+	if strings.Contains(strings.ToLower(transferEncodingVal), "chunked") {
+		return true
+	}
+	// AWS signed requests can encode chunks using the Content-Encoding header
+	contentEncodingVal := req.Header.Get("Content-Encoding")
+	return strings.Contains(strings.ToLower(contentEncodingVal), "aws-chunked")
 }
 
 // A helper struct that guarantees a call to close only affects read side, but not write side.
